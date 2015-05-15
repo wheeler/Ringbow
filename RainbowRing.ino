@@ -53,11 +53,18 @@ const int numColors = 160;
 int rainbowColors[numColors];
 const int colorToRingRatio = numColors / ledsPerStrip;
 
+
+const int linearCount = 6;
+const int colorToLinearRatio = numColors / linearCount;
+int linearMap[linearCount][4];
+
 void setup() {
   
   Serial.begin(9600); // USB is always 12 Mbit/sec
   pinMode(1, OUTPUT);
   digitalWrite(1, HIGH);
+  
+  // SETUP COLORS
   for (int i=0; i<numColors; i++) {
     int hue = i * (360/numColors);
     int saturation = 100;
@@ -65,6 +72,47 @@ void setup() {
     // pre-compute the numColors rainbow colors
     rainbowColors[i] = makeColor(hue, saturation, lightness);
   }
+  
+  // SETUP LINEAR MAP
+  for (int i=0; i < linearCount; i++) {
+    if (i==0) {
+      linearMap[i][0] = 0;
+      linearMap[i][1] = 1;
+      linearMap[i][2] = 2;
+      linearMap[i][3] = 3;
+    }
+    if (i==1) {
+      linearMap[i][0] = 4;
+      linearMap[i][1] = 15;
+      linearMap[i][2] = -1;
+      linearMap[i][3] = -1;
+    }
+    if (i==2) {
+      linearMap[i][0] = 5;
+      linearMap[i][1] = 14;
+      linearMap[i][2] = -1;
+      linearMap[i][3] = -1;
+    }
+    if (i==3) {
+      linearMap[i][0] = 6;
+      linearMap[i][1] = 13;
+      linearMap[i][2] = -1;
+      linearMap[i][3] = -1;
+    }
+    if (i==4) {
+      linearMap[i][0] = 7;
+      linearMap[i][1] = 12;
+      linearMap[i][2] = -1;
+      linearMap[i][3] = -1;
+    }
+    if (i==5) {
+      linearMap[i][0] = 8;
+      linearMap[i][1] = 9;
+      linearMap[i][2] = 10;
+      linearMap[i][3] = 11;
+    }
+  }
+  
   digitalWrite(1, LOW);
   leds.begin();
 }
@@ -73,7 +121,50 @@ void setup() {
 void loop() {
   
   //rainbow(100);
-  skip_rainbow(120, 2, 2);
+  //skip_rainbow(120, 2, 2);
+  linearSweep();
+}
+
+void linearSweep() {
+  int wait = 5000;
+  int px, color;
+
+color=0;
+  for (color=0; color < numColors; color++) {
+     digitalWrite(1, HIGH);
+    for (int x=0; x < linearCount; x++) {
+      
+      int index = (color + colorToLinearRatio*x) % numColors;
+      
+      px = linearMap[x][0];
+      if (px != -1) {
+        leds.setPixel(px, rainbowColors[index]);
+//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
+      }
+      px = linearMap[x][1];
+      if (px != -1) {
+        leds.setPixel(px, rainbowColors[index]);
+//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
+      }
+      px = linearMap[x][2];
+      if (px != -1) {
+        leds.setPixel(px, rainbowColors[index]);
+//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
+      }
+      px = linearMap[x][3];
+      if (px != -1) {
+        leds.setPixel(px, rainbowColors[index]);
+//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
+      }
+
+    }
+    
+    //leds.setPixel(0, 0);
+    
+    leds.show();
+    digitalWrite(1, LOW);
+    delayMicroseconds(wait);
+  }
 }
 
 // cycleTime is the number of milliseconds to shift through
