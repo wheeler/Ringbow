@@ -68,7 +68,7 @@ void setup() {
   for (int i=0; i<numColors; i++) {
     int hue = i * (360/numColors);
     int saturation = 100;
-    int lightness = 5; //50
+    int lightness = 2; //50
     // pre-compute the numColors rainbow colors
     rainbowColors[i] = makeColor(hue, saturation, lightness);
   }
@@ -227,3 +227,4 @@ void skip_rainbow(int cycleTime, int num_off_pix, int relative_speed)
   }
   
 }
+
