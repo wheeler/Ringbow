@@ -70,7 +70,7 @@ void setup() {
   
   // SETUP COLORS
   for (int i=0; i<numColors; i++) {
-    int hue = i * (360/numColors);
+    int hue = (i * 360)/numColors;
     int saturation = 100;
     int lightness = 2; //50
     // pre-compute the numColors rainbow colors
@@ -110,8 +110,6 @@ void linearSweep() {
       index = (color + linearCosOffsets[x]) % numColors;
       leds.setPixel(x, rainbowColors[index]);
       leds.setPixel(ledsPerStrip-1-x, rainbowColors[index]);
-      if (x==5)
-        Serial.println(index);
     }
 
     leds.show();
