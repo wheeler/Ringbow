@@ -58,6 +58,10 @@ const int linearCount = 6;
 const int colorToLinearRatio = numColors / linearCount;
 int linearMap[linearCount][4];
 
+const int linearCosCount = ledsPerStrip / 2;
+int linearCosOffsets[linearCosCount];
+const float pi = 3.14;
+
 void setup() {
   
   Serial.begin(9600); // USB is always 12 Mbit/sec
@@ -73,44 +77,14 @@ void setup() {
     rainbowColors[i] = makeColor(hue, saturation, lightness);
   }
   
-  // SETUP LINEAR MAP
-  for (int i=0; i < linearCount; i++) {
-    if (i==0) {
-      linearMap[i][0] = 0;
-      linearMap[i][1] = 1;
-      linearMap[i][2] = 2;
-      linearMap[i][3] = 3;
-    }
-    if (i==1) {
-      linearMap[i][0] = 4;
-      linearMap[i][1] = 15;
-      linearMap[i][2] = -1;
-      linearMap[i][3] = -1;
-    }
-    if (i==2) {
-      linearMap[i][0] = 5;
-      linearMap[i][1] = 14;
-      linearMap[i][2] = -1;
-      linearMap[i][3] = -1;
-    }
-    if (i==3) {
-      linearMap[i][0] = 6;
-      linearMap[i][1] = 13;
-      linearMap[i][2] = -1;
-      linearMap[i][3] = -1;
-    }
-    if (i==4) {
-      linearMap[i][0] = 7;
-      linearMap[i][1] = 12;
-      linearMap[i][2] = -1;
-      linearMap[i][3] = -1;
-    }
-    if (i==5) {
-      linearMap[i][0] = 8;
-      linearMap[i][1] = 9;
-      linearMap[i][2] = 10;
-      linearMap[i][3] = 11;
-    }
+
+  // Setup color indexing math for linear sweeps
+  // the math is this (paste in wolfram alpha to visualize):
+  //   plot -cos(x)/2 +.5 from 0 to pi
+  float rads;  
+  for (int i=0; i < linearCosCount; i++) {
+    rads = (i / (float)linearCosCount) * pi;
+    linearCosOffsets[i] = (0.5 - (cos(rads) / 2)) * numColors;
   }
   
   digitalWrite(1, LOW);
@@ -126,41 +100,20 @@ void loop() {
 }
 
 void linearSweep() {
-  int wait = 5000;
-  int px, color;
+  int wait = 50000;
+  int px, color, index;
 
-color=0;
   for (color=0; color < numColors; color++) {
-     digitalWrite(1, HIGH);
-    for (int x=0; x < linearCount; x++) {
-      
-      int index = (color + colorToLinearRatio*x) % numColors;
-      
-      px = linearMap[x][0];
-      if (px != -1) {
-        leds.setPixel(px, rainbowColors[index]);
-//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
-      }
-      px = linearMap[x][1];
-      if (px != -1) {
-        leds.setPixel(px, rainbowColors[index]);
-//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
-      }
-      px = linearMap[x][2];
-      if (px != -1) {
-        leds.setPixel(px, rainbowColors[index]);
-//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
-      }
-      px = linearMap[x][3];
-      if (px != -1) {
-        leds.setPixel(px, rainbowColors[index]);
-//        Serial.print(px); Serial.print(' '); Serial.println(rainbowColors[index]);
-      }
+    digitalWrite(1, HIGH);
 
+    for (int x=0; x < linearCosCount; x++) {
+      index = (color + linearCosOffsets[0]) % numColors;
+      leds.setPixel(x, rainbowColors[index]);
+      leds.setPixel(ledsPerStrip-1-x, rainbowColors[index]);
+      if (x==5)
+        Serial.println(index);
     }
-    
-    //leds.setPixel(0, 0);
-    
+
     leds.show();
     digitalWrite(1, LOW);
     delayMicroseconds(wait);
