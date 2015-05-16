@@ -101,13 +101,13 @@ void loop() {
 
 void linearSweep() {
   int wait = 50000;
-  int px, color, index;
+  int color, index;
 
   for (color=0; color < numColors; color++) {
     digitalWrite(1, HIGH);
 
     for (int x=0; x < linearCosCount; x++) {
-      index = (color + linearCosOffsets[0]) % numColors;
+      index = (color + linearCosOffsets[x]) % numColors;
       leds.setPixel(x, rainbowColors[index]);
       leds.setPixel(ledsPerStrip-1-x, rainbowColors[index]);
       if (x==5)
